@@ -1,11 +1,23 @@
 'use client'
 
 import { useParams } from 'next/navigation'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 
 export default function PostDetail() {
   const { id } = useParams()
+  const [post, setPost] = useState({})
 
-  useState({})
-  return <>{id}번 게시글 상세</>
+  useEffect(() => {
+    fetch(`https://dummyjson.com/posts/${id}`)
+      .then((res) => res.json())
+      .then((res) => setPost(res))
+  }, [])
+
+  return (
+    <>
+      <div>{post.id}번 게시글 상세</div>
+      <div>{post.title}</div>
+      <div>{post.body}</div>
+    </>
+  )
 }
