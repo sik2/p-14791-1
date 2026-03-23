@@ -1,15 +1,26 @@
 'use client'
 
+import { supabase } from '@/lib/supabase'
 import Link from 'next/link'
 import { useEffect, useState } from 'react'
 
+interface Post {
+  id: number
+  created_at: string
+  title: string
+  content: string
+}
+
 export default function PostList() {
-  const [posts, setPosts] = useState([])
+  const [posts, setPosts] = useState<Post[]>([])
+
+  const fetchPosts = async () => {
+    let { data: posts, error } = await supabase.from('posts').select('*')
+    setPosts((posts as Post[]) ?? [])
+  }
 
   useEffect(() => {
-    fetch('https://dummyjson.com/posts')
-      .then((res) => res.json())
-      .then((res) => setPosts(res.posts))
+    fetchPosts()
   }, [])
 
   return (
