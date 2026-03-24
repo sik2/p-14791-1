@@ -1,6 +1,7 @@
 'use client'
 
 import { supabase } from '@/lib/supabase'
+import { User } from '@supabase/supabase-js'
 import Link from 'next/link'
 import { useParams, useRouter } from 'next/navigation'
 import { useEffect, useState } from 'react'
@@ -10,6 +11,7 @@ interface Post {
   created_at: string
   title: string
   content: string
+  user_id: string
 }
 
 interface Comment {
@@ -17,6 +19,7 @@ interface Comment {
   post_id: number
   content: string
   created_at: string
+  user_id: string
 }
 
 export default function PostDetail() {
@@ -25,6 +28,7 @@ export default function PostDetail() {
   const [post, setPost] = useState<Post | null>(null)
   const [comments, setComments] = useState<Comment[]>([])
   const [content, setContent] = useState<string>('')
+  const [user, setUser] = useState<User | null>(null)
 
   const fetchPost = async () => {
     const { data: post, error } = await supabase
@@ -43,9 +47,15 @@ export default function PostDetail() {
     setComments(comments ?? [])
   }
 
+  const fetchUser = async () => {
+    const { data, error } = await supabase.auth.getSession()
+    setUser(data.session?.user ?? null)
+  }
+
   useEffect(() => {
     fetchPost()
     fetchComments()
+    fetchUser()
   }, [])
 
   const handleOnDelete = async (id: number) => {
@@ -123,27 +133,33 @@ export default function PostDetail() {
         {comments.map((comment) => (
           <li key={comment.id}>
             - {comment.content}
-            <button
-              onClick={() => handleOnCommentDelete(comment.id)}
-              className="border p-1"
-            >
-              X
-            </button>
+            {user?.id === comment.user_id && (
+              <button
+                onClick={() => handleOnCommentDelete(comment.id)}
+                className="border p-1"
+              >
+                X
+              </button>
+            )}
           </li>
         ))}
       </ul>
-      <button
-        className="p-2 rounded border-1 hover:bg-gray-200"
-        onClick={() => handleOnDelete(post.id)}
-      >
-        삭제
-      </button>
-      <Link
-        href={`/posts/${post.id}/edit`}
-        className="p-3 rounded border-1 hover:bg-gray-200"
-      >
-        수정
-      </Link>
+      {user?.id === post.user_id && (
+        <>
+          <button
+            className="p-2 rounded border-1 hover:bg-gray-200"
+            onClick={() => handleOnDelete(post.id)}
+          >
+            삭제
+          </button>
+          <Link
+            href={`/posts/${post.id}/edit`}
+            className="p-3 rounded border-1 hover:bg-gray-200"
+          >
+            수정
+          </Link>
+        </>
+      )}
     </>
   )
 }
