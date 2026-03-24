@@ -12,10 +12,15 @@ export default function NewPost() {
   const handleOnSubmit = async (e: React.SubmitEvent<HTMLFormElement>) => {
     e.preventDefault()
 
-    const { error } = await supabase.from('posts').insert([{ title, content }])
+    const { data, error } = await supabase
+      .from('posts')
+      .insert([{ title, content }])
+      .select()
 
     if (error) {
       console.log(error)
+    } else if (!data || data.length === 0) {
+      alert('권한이 없습니다.')
     } else {
       alert('글쓰기 성공!')
       router.push('/posts')
