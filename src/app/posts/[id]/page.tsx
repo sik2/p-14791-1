@@ -74,6 +74,15 @@ export default function PostDetail() {
       fetchComments()
     }
   }
+  const handleOnCommentDelete = async (id: number) => {
+    const { error } = await supabase.from('comments').delete().eq('id', id)
+    if (error) {
+      console.log(error)
+    } else {
+      alert('댓글 삭제 성공!')
+      fetchComments()
+    }
+  }
 
   if (!post) {
     return <div>Loading...</div>
@@ -95,7 +104,15 @@ export default function PostDetail() {
       </form>
       <ul>
         {comments.map((comment) => (
-          <li key={comment.id}> - {comment.content}</li>
+          <li key={comment.id}>
+            - {comment.content}
+            <button
+              onClick={() => handleOnCommentDelete(comment.id)}
+              className="border p-1"
+            >
+              X
+            </button>
+          </li>
         ))}
       </ul>
       <button
